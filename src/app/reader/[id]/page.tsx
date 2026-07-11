@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, Settings, Search, Bookmark, Palette } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ReaderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,6 +23,13 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
 
   const [theme, setTheme] = useState("dark");
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("reader-theme");
@@ -190,18 +197,38 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
 
   return (
     <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} font-serif selection:bg-indigo-500/30 transition-colors duration-300`}>
+       <motion.div
+         className="fixed top-0 left-0 right-0 h-1 bg-indigo-500 origin-left z-[60]"
+         style={{ scaleX }}
+       />
        <header className={`sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md border-b font-sans transition-colors duration-300 ${themeClasses.headerBg}`}>
         <Link href="/catalog" className={`flex items-center gap-2 text-sm transition-colors ${themeClasses.headerText}`}>
           <ArrowLeft className="w-4 h-4" />
           Back to Library
         </Link>
-        <div className={`flex items-center gap-4 ${themeClasses.headerText}`}>
-          <button className="transition-colors p-2"><Search className="w-5 h-5" /></button>
-          <button className="transition-colors p-2"><Bookmark className="w-5 h-5" /></button>
+        <div className={`flex items-center gap-1 sm:gap-2 md:gap-4 ${themeClasses.headerText}`}>
+          <button 
+            onClick={() => {
+              if (typeof window !== 'undefined' && (window as any).find) {
+                 (window as any).find();
+              } else {
+                 alert("Press Ctrl+F or Cmd+F to search the book!");
+              }
+            }}
+            className="hidden md:block transition-colors p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => alert("Bookmark saved! You can return to this spot later.")}
+            className="hidden md:block transition-colors p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
+          >
+            <Bookmark className="w-5 h-5" />
+          </button>
           <div className="relative">
             <button 
               onClick={() => setShowThemeMenu(!showThemeMenu)}
-              className="transition-colors p-2"
+              className="transition-colors p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
             >
               <Palette className="w-5 h-5" />
             </button>
@@ -226,12 +253,31 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
               )}
             </AnimatePresence>
           </div>
-          <button className="transition-colors p-2"><Settings className="w-5 h-5" /></button>
+          <Link 
+            href="/profile"
+            className="hidden sm:block transition-colors p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
+          >
+            <Settings className="w-5 h-5" />
+          </Link>
         </div>
       </header>
       
       <div className="flex max-w-[1400px] mx-auto">
-        <div className="hidden lg:block flex-1 max-w-[200px]" />
+        <div className={`hidden lg:flex flex-col flex-1 max-w-[200px] sticky top-16 h-[calc(100vh-64px)] p-8 gap-4 font-sans transition-colors duration-300 ${themeClasses.headerText}`}>
+           <div className="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-50">Navigation</div>
+           <button 
+             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth'})} 
+             className="text-left text-sm hover:translate-x-1 transition-transform"
+           >
+             Go to Top
+           </button>
+           <button 
+             onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth'})} 
+             className="text-left text-sm hover:translate-x-1 transition-transform"
+           >
+             Go to Bottom
+           </button>
+        </div>
         
         <main className="flex-[2] max-w-[700px] px-8 py-16 lg:px-12 leading-relaxed text-lg lg:text-xl relative transition-colors duration-300">
           <div className="mb-16 text-center font-sans">

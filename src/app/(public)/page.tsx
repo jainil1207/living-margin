@@ -24,14 +24,22 @@ export default function LandingPage() {
         {/* Background ambient gradients */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          animate={{ opacity: 1, scale: 1, y: [0, -30, 0] }}
+          transition={{ 
+            opacity: { duration: 1.5, ease: "easeOut" },
+            scale: { duration: 1.5, ease: "easeOut" },
+            y: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+          }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/15 blur-[120px] rounded-full pointer-events-none" 
         />
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          animate={{ opacity: 1, scale: 1, x: [0, 40, 0] }}
+          transition={{ 
+            opacity: { duration: 1.5, ease: "easeOut", delay: 0.2 },
+            scale: { duration: 1.5, ease: "easeOut", delay: 0.2 },
+            x: { duration: 10, repeat: Infinity, ease: "easeInOut" }
+          }}
           className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" 
         />
 
@@ -88,16 +96,35 @@ export default function LandingPage() {
       {/* 2. FEATURES GRID SECTION */}
       <section className="relative z-10 py-32 px-8 bg-slate-950 border-t border-slate-800/50">
         <div className="max-w-7xl mx-auto space-y-20">
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center space-y-4 max-w-3xl mx-auto"
+          >
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">More than just text on a screen.</h2>
             <p className="text-xl text-slate-400">The Living Margin transforms solitary reading into a dynamic, collaborative, and deeply personalized experience.</p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.2 } }
+            }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
             {/* Feature 1 */}
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm space-y-6"
+              variants={{
+                hidden: { opacity: 0, y: 40 },
+                show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
+              }}
+              whileHover={{ y: -10, transition: { duration: 0.2 } }}
+              className="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm space-y-6 shadow-xl hover:shadow-indigo-500/10 transition-shadow"
             >
               <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
                 <MessageSquare className="w-6 h-6 text-indigo-400" />
@@ -108,8 +135,12 @@ export default function LandingPage() {
 
             {/* Feature 2 */}
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm space-y-6"
+              variants={{
+                hidden: { opacity: 0, y: 40 },
+                show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
+              }}
+              whileHover={{ y: -10, transition: { duration: 0.2 } }}
+              className="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm space-y-6 shadow-xl hover:shadow-cyan-500/10 transition-shadow"
             >
               <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
                 <Users className="w-6 h-6 text-cyan-400" />
@@ -120,8 +151,12 @@ export default function LandingPage() {
 
             {/* Feature 3 */}
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm space-y-6"
+              variants={{
+                hidden: { opacity: 0, y: 40 },
+                show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
+              }}
+              whileHover={{ y: -10, transition: { duration: 0.2 } }}
+              className="p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm space-y-6 shadow-xl hover:shadow-teal-500/10 transition-shadow"
             >
               <div className="w-14 h-14 rounded-2xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
                 <Layers className="w-6 h-6 text-teal-400" />
@@ -129,34 +164,40 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold">Smart Bookshelf</h3>
               <p className="text-slate-400 leading-relaxed">Organize your entire digital library. Track your reading progress, categorize by custom tags, and instantly search through all your past annotations.</p>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* 3. SOCIAL PROOF / STATS */}
       <section className="py-24 bg-gradient-to-b from-slate-950 to-slate-900 border-t border-slate-800/50 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-        <div className="max-w-7xl mx-auto px-8 relative z-10 flex flex-col items-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="max-w-7xl mx-auto px-8 relative z-10 flex flex-col items-center"
+        >
           <h2 className="text-3xl font-bold mb-12 text-center">Join thousands redefining how they read</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center w-full max-w-4xl">
-            <div className="space-y-2">
-              <div className="text-5xl font-black text-white">50k+</div>
+            <div className="space-y-2 group cursor-default">
+              <div className="text-5xl font-black text-white group-hover:text-indigo-400 transition-colors">50k+</div>
               <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Active Readers</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-5xl font-black text-white">1.2M</div>
+            <div className="space-y-2 group cursor-default">
+              <div className="text-5xl font-black text-white group-hover:text-cyan-400 transition-colors">1.2M</div>
               <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Margin Notes</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">10k+</div>
+            <div className="space-y-2 group cursor-default">
+              <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 group-hover:scale-110 transition-transform origin-center">10k+</div>
               <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Books Cataloged</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-5xl font-black text-white">4.9/5</div>
+            <div className="space-y-2 group cursor-default">
+              <div className="text-5xl font-black text-white group-hover:text-teal-400 transition-colors">4.9/5</div>
               <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Average Rating</div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* 4. CTA FOOTER */}
