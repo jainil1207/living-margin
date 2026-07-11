@@ -18,11 +18,19 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
   const [newHighlightText, setNewHighlightText] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const supabase = createClient();
 
   useEffect(() => {
     const fetchData = async () => {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCurrentUser(session.user);
+      }
+
       // Fetch book
       const { data: bookData, error: bookError } = await supabase.from("books").select("*").eq("id", id).single();
       if (bookError) {
@@ -39,12 +47,25 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
          console.error("Annotations fetch error:", annError);
       }
       if (annotationsData) {
-        setAnnotations(annotationsData);
+        const userIds = Array.from(new Set(annotationsData.map((a: any) => a.user_id)));
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase.from("profiles").select("*").in("id", userIds);
+          const profileMap: Record<string, any> = {};
+          profilesData?.forEach((p: any) => profileMap[p.id] = p);
+          
+          const enrichedAnnotations = annotationsData.map((a: any) => ({
+            ...a,
+            profile: profileMap[a.user_id]
+          }));
+          setAnnotations(enrichedAnnotations);
+        } else {
+          setAnnotations(annotationsData);
+        }
       }
       setIsLoading(false);
     };
     fetchData();
-  }, [id]);
+  }, [id, supabase]);
 
   const handleSaveNote = async () => {
     if (!newNoteText.trim()) return;
@@ -61,6 +82,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
       book_id: id,
       highlight_text: newHighlightText.trim() || "General Note",
       note_text: newNoteText.trim(),
+      is_public: isPublic,
     };
 
     const { data, error } = await supabase.from("annotations").insert(newAnnotation).select().single();
@@ -68,10 +90,19 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
     if (error) {
       alert("Failed to save note: " + error.message);
     } else if (data) {
-      setAnnotations([data, ...annotations]);
+      // Add profile info to the new annotation so it renders correctly immediately
+      const enrichedNewAnnotation = {
+        ...data,
+        profile: currentUser ? {
+          full_name: currentUser.user_metadata?.full_name || "Me",
+          avatar_url: currentUser.user_metadata?.avatar_url
+        } : null
+      };
+      setAnnotations([enrichedNewAnnotation, ...annotations]);
       setIsAddingNote(false);
       setNewNoteText("");
       setNewHighlightText("");
+      setIsPublic(false);
     }
   };
 
@@ -207,19 +238,47 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                        placeholder="What are your thoughts?"
                      ></textarea>
                    </div>
-                   <div className="flex justify-end gap-2">
-                     <button onClick={() => setIsAddingNote(false)} className="px-3 py-1.5 rounded text-xs text-slate-400 hover:text-slate-300">Cancel</button>
-                     <button onClick={handleSaveNote} className="px-3 py-1.5 rounded text-xs bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">Save</button>
+                   <div className="flex justify-between items-center mt-2">
+                     <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400 hover:text-slate-300">
+                       <input 
+                         type="checkbox" 
+                         checked={isPublic} 
+                         onChange={e => setIsPublic(e.target.checked)}
+                         className="accent-indigo-500 w-3.5 h-3.5"
+                       />
+                       Make Public
+                     </label>
+                     <div className="flex justify-end gap-2">
+                       <button onClick={() => setIsAddingNote(false)} className="px-3 py-1.5 rounded text-xs text-slate-400 hover:text-slate-300">Cancel</button>
+                       <button onClick={handleSaveNote} className="px-3 py-1.5 rounded text-xs bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">Save</button>
+                     </div>
                    </div>
                  </motion.div>
               )}
             </AnimatePresence>
 
             <div className="flex-1 space-y-4">
-              {annotations.map(note => (
-                <div key={note.id} className="bg-indigo-950/20 border border-indigo-500/10 p-5 rounded-2xl shadow-lg hover:border-indigo-500/30 transition-colors">
+              {annotations.map(note => {
+                const isMine = currentUser && note.user_id === currentUser.id;
+                const authorName = isMine ? "Me" : (note.profile?.full_name || "Unknown Reader");
+                const authorAvatar = note.profile?.avatar_url;
+                
+                return (
+                <div key={note.id} className={`p-5 rounded-2xl shadow-lg transition-colors border ${isMine ? 'bg-indigo-950/20 border-indigo-500/10 hover:border-indigo-500/30' : 'bg-slate-900/40 border-slate-700/30 hover:border-slate-500/50'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-slate-500">{new Date(note.created_at).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2">
+                      {authorAvatar ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={authorAvatar} alt={authorName} className="w-5 h-5 rounded-full object-cover" />
+                      ) : (
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isMine ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-700 text-slate-300'}`}>
+                          {authorName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className={`text-xs font-semibold ${isMine ? 'text-indigo-400' : 'text-slate-300'}`}>{authorName}</span>
+                      {note.is_public && isMine && <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded ml-1">Public</span>}
+                    </div>
+                    <span className="text-[10px] text-slate-500">{new Date(note.created_at).toLocaleDateString()}</span>
                   </div>
                   {note.highlight_text !== "General Note" && (
                     <div className="relative mb-3">
@@ -233,7 +292,8 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                     {note.note_text}
                   </p>
                 </div>
-              ))}
+                );
+              })}
               
               {annotations.length === 0 && !isAddingNote && (
                 <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 pb-32">
