@@ -30,7 +30,7 @@ export default function DashboardLayout({
     { name: "Library", href: "/catalog", icon: Library },
     { name: "Annotations", href: "/annotations", icon: PenTool },
     { name: "Community", href: "/community", icon: Users },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Profile", href: "/profile", icon: Settings },
   ];
 
   return (

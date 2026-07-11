@@ -22,11 +22,18 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [books, setBooks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const supabase = createClient();
 
   useEffect(() => {
     const fetchBooks = async () => {
+      // Check admin status
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email === "trivedijainil88@gmail.com") {
+        setIsAdmin(true);
+      }
+
       const { data, error } = await supabase.from("books").select("id, title, author, cover_url");
       if (data) {
         setBooks(data);
@@ -34,7 +41,7 @@ export default function CatalogPage() {
       setIsLoading(false);
     };
     fetchBooks();
-  }, []);
+  }, [supabase]);
 
   const categories = ["All", "Philosophy", "Business", "Fiction", "History", "Science"];
 
@@ -52,7 +59,14 @@ export default function CatalogPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Library Catalog</h1>
-          <p className="text-slate-400">Discover your next favorite book.</p>
+          <div className="flex items-center gap-4">
+            <p className="text-slate-400">Discover your next favorite book.</p>
+            {isAdmin && (
+              <Link href="/admin" className="text-xs bg-indigo-600/20 text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-500/20 hover:bg-indigo-600/30 hover:border-indigo-500/40 transition-colors">
+                + Add Book
+              </Link>
+            )}
+          </div>
         </div>
         
         <div className="flex items-center gap-3">

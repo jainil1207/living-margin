@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Settings, Search, Bookmark } from "lucide-react";
+import { ArrowLeft, Settings, Search, Bookmark, Palette } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,6 +20,20 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
   const [newHighlightText, setNewHighlightText] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const [theme, setTheme] = useState("dark");
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("reader-theme");
+    if (savedTheme) setTheme(savedTheme);
+  }, []);
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    localStorage.setItem("reader-theme", newTheme);
+    setShowThemeMenu(false);
+  };
 
   const supabase = createClient();
 
@@ -121,26 +135,98 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
   // Split book content into paragraphs
   const paragraphs = book.content.split('\n').filter((p: string) => p.trim().length > 0);
 
+  let themeClasses = {
+    bg: "bg-[#0A0F1C]",
+    text: "text-slate-300",
+    headerBg: "bg-[#0A0F1C]/90 border-white/5",
+    headerText: "text-slate-400 hover:text-white",
+    title: "text-white",
+    marginBg: "bg-[#0A0F1C]",
+    marginBorder: "border-white/5",
+    marginText: "text-slate-300",
+    marginNoteBg: "bg-slate-900/40 border-slate-700/30",
+    highlightBg: "bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-200",
+    mineNoteBg: "bg-indigo-950/20 border-indigo-500/10 hover:border-indigo-500/30"
+  };
+
+  if (theme === "sepia") {
+    themeClasses = {
+      bg: "bg-[#F4ECD8]",
+      text: "text-[#5C4D3C]",
+      headerBg: "bg-[#F4ECD8]/90 border-[#D4C4A8]",
+      headerText: "text-[#8C7A6B] hover:text-[#5C4D3C]",
+      title: "text-[#3E3222]",
+      marginBg: "bg-[#EAE0C8]",
+      marginBorder: "border-[#D4C4A8]",
+      marginText: "text-[#5C4D3C]",
+      marginNoteBg: "bg-[#F4ECD8] border-[#D4C4A8]",
+      highlightBg: "bg-[#D4C4A8] hover:bg-[#C4B498] text-[#3E3222]",
+      mineNoteBg: "bg-[#E2D4B7] border-[#C4B498] hover:border-[#A49478]"
+    };
+  } else if (theme === "light") {
+    themeClasses = {
+      bg: "bg-white",
+      text: "text-slate-700",
+      headerBg: "bg-white/90 border-slate-200",
+      headerText: "text-slate-500 hover:text-slate-900",
+      title: "text-slate-900",
+      marginBg: "bg-slate-50",
+      marginBorder: "border-slate-200",
+      marginText: "text-slate-700",
+      marginNoteBg: "bg-white border-slate-200",
+      highlightBg: "bg-yellow-100 hover:bg-yellow-200 text-yellow-900",
+      mineNoteBg: "bg-indigo-50 border-indigo-100 hover:border-indigo-200"
+    };
+  }
+
   return (
-    <div className="min-h-screen bg-[#0A0F1C] text-slate-300 font-serif selection:bg-indigo-500/30">
-       <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[#0A0F1C]/90 backdrop-blur-md border-b border-white/5 font-sans">
-        <Link href="/catalog" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+    <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} font-serif selection:bg-indigo-500/30 transition-colors duration-300`}>
+       <header className={`sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md border-b font-sans transition-colors duration-300 ${themeClasses.headerBg}`}>
+        <Link href="/catalog" className={`flex items-center gap-2 text-sm transition-colors ${themeClasses.headerText}`}>
           <ArrowLeft className="w-4 h-4" />
           Back to Library
         </Link>
-        <div className="flex items-center gap-4 text-slate-400">
-          <button className="hover:text-white transition-colors p-2"><Search className="w-5 h-5" /></button>
-          <button className="hover:text-white transition-colors p-2"><Bookmark className="w-5 h-5" /></button>
-          <button className="hover:text-white transition-colors p-2"><Settings className="w-5 h-5" /></button>
+        <div className={`flex items-center gap-4 ${themeClasses.headerText}`}>
+          <button className="transition-colors p-2"><Search className="w-5 h-5" /></button>
+          <button className="transition-colors p-2"><Bookmark className="w-5 h-5" /></button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowThemeMenu(!showThemeMenu)}
+              className="transition-colors p-2"
+            >
+              <Palette className="w-5 h-5" />
+            </button>
+            <AnimatePresence>
+              {showThemeMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50 text-slate-300 font-sans text-sm"
+                >
+                  <button onClick={() => handleThemeChange("dark")} className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors flex items-center justify-between">
+                    Dark <span className="w-3 h-3 rounded-full bg-[#0A0F1C] border border-slate-700" />
+                  </button>
+                  <button onClick={() => handleThemeChange("sepia")} className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors flex items-center justify-between">
+                    Sepia <span className="w-3 h-3 rounded-full bg-[#F4ECD8] border border-slate-700" />
+                  </button>
+                  <button onClick={() => handleThemeChange("light")} className="w-full text-left px-4 py-3 hover:bg-slate-800 transition-colors flex items-center justify-between">
+                    Light <span className="w-3 h-3 rounded-full bg-white border border-slate-700" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <button className="transition-colors p-2"><Settings className="w-5 h-5" /></button>
         </div>
       </header>
       
       <div className="flex max-w-[1400px] mx-auto">
         <div className="hidden lg:block flex-1 max-w-[200px]" />
         
-        <main className="flex-[2] max-w-[700px] px-8 py-16 lg:px-12 leading-relaxed text-lg lg:text-xl text-slate-300 relative">
+        <main className="flex-[2] max-w-[700px] px-8 py-16 lg:px-12 leading-relaxed text-lg lg:text-xl relative transition-colors duration-300">
           <div className="mb-16 text-center font-sans">
-            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-4 font-serif">{book.title}</h1>
+            <h1 className={`text-3xl lg:text-4xl font-bold mb-4 font-serif transition-colors duration-300 ${themeClasses.title}`}>{book.title}</h1>
             <p className="text-slate-400 text-sm uppercase tracking-widest">{book.author}</p>
           </div>
 
@@ -171,7 +257,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                             newElements.push(
                               <span 
                                 key={`${note.id}-${i}`}
-                                className="bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-200 transition-colors duration-300 rounded px-1 shadow-[0_0_10px_rgba(79,70,229,0.2)] cursor-pointer"
+                                className={`${themeClasses.highlightBg} transition-colors duration-300 rounded px-1 shadow-[0_0_10px_rgba(79,70,229,0.2)] cursor-pointer`}
                               >
                                 {note.highlight_text}
                               </span>
@@ -197,7 +283,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
         </main>
 
         {/* Right Margin */}
-        <aside className="hidden md:flex flex-col flex-[1.5] max-w-[400px] border-l border-white/5 bg-[#0A0F1C] relative">
+        <aside className={`hidden md:flex flex-col flex-[1.5] max-w-[400px] border-l transition-colors duration-300 ${themeClasses.marginBg} ${themeClasses.marginBorder} relative`}>
           <div className="sticky top-16 h-[calc(100vh-64px)] p-6 overflow-y-auto font-sans flex flex-col">
             <div className="flex items-center justify-between mb-6">
               <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -264,7 +350,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                 const authorAvatar = note.profile?.avatar_url;
                 
                 return (
-                <div key={note.id} className={`p-5 rounded-2xl shadow-lg transition-colors border ${isMine ? 'bg-indigo-950/20 border-indigo-500/10 hover:border-indigo-500/30' : 'bg-slate-900/40 border-slate-700/30 hover:border-slate-500/50'}`}>
+                <div key={note.id} className={`p-5 rounded-2xl shadow-lg transition-colors duration-300 border ${isMine ? themeClasses.mineNoteBg : themeClasses.marginNoteBg}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {authorAvatar ? (
@@ -283,12 +369,12 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                   {note.highlight_text !== "General Note" && (
                     <div className="relative mb-3">
                       <div className="absolute -left-2 -top-1 text-2xl text-slate-700 opacity-30 font-serif">"</div>
-                      <p className="text-slate-400 font-serif leading-relaxed text-sm italic relative z-10 line-clamp-3">
+                      <p className={`font-serif leading-relaxed text-sm italic relative z-10 line-clamp-3 transition-colors duration-300 ${themeClasses.marginText}`}>
                         {note.highlight_text}
                       </p>
                     </div>
                   )}
-                  <p className="text-sm text-slate-300 mb-2">
+                  <p className={`text-sm mb-2 transition-colors duration-300 ${themeClasses.marginText}`}>
                     {note.note_text}
                   </p>
                 </div>
