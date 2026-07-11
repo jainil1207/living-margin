@@ -35,6 +35,15 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
     setShowThemeMenu(false);
   };
 
+  const scrollToNote = (noteId: string) => {
+    const el = document.getElementById(`note-${noteId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-2', 'ring-indigo-500', 'scale-[1.02]');
+      setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-500', 'scale-[1.02]'), 1500);
+    }
+  };
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -257,7 +266,8 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                             newElements.push(
                               <span 
                                 key={`${note.id}-${i}`}
-                                className={`${themeClasses.highlightBg} transition-colors duration-300 rounded px-1 shadow-[0_0_10px_rgba(79,70,229,0.2)] cursor-pointer`}
+                                onClick={() => scrollToNote(note.id)}
+                                className={`${themeClasses.highlightBg} transition-colors duration-300 rounded px-1 shadow-[0_0_10px_rgba(79,70,229,0.2)] cursor-pointer hover:opacity-80`}
                               >
                                 {note.highlight_text}
                               </span>
@@ -350,7 +360,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                 const authorAvatar = note.profile?.avatar_url;
                 
                 return (
-                <div key={note.id} className={`p-5 rounded-2xl shadow-lg transition-colors duration-300 border ${isMine ? themeClasses.mineNoteBg : themeClasses.marginNoteBg}`}>
+                <div key={note.id} id={`note-${note.id}`} className={`p-5 rounded-2xl shadow-lg transition-all duration-500 border transform ${isMine ? themeClasses.mineNoteBg : themeClasses.marginNoteBg}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       {authorAvatar ? (

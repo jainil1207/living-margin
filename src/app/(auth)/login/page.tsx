@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -59,7 +60,25 @@ export default function LoginPage() {
       
     } catch (error: any) {
       setErrors({ server: error.message || "An error occurred during login" });
+    } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleOAuth = async (provider: 'github' | 'google') => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (error) {
+        setErrors({ server: error.message });
+      }
+    } catch (e: any) {
+      setErrors({ server: e.message || 'An error occurred during authentication' });
     }
   };
 
@@ -77,8 +96,14 @@ export default function LoginPage() {
         <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
           
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-500/20 border border-indigo-500/30 mb-4">
-              <BookOpen className="w-6 h-6 text-indigo-400" />
+            <div className="inline-flex items-center justify-center mb-4">
+              <Image 
+                src="/logo.png" 
+                alt="The Living Margin Logo" 
+                width={48} 
+                height={48} 
+                className="rounded-xl object-cover bg-slate-900 border border-slate-800 shadow-xl shadow-indigo-500/10"
+              />
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Welcome back</h1>
             <p className="text-slate-400 text-sm">Enter your credentials to access your library</p>
@@ -102,6 +127,7 @@ export default function LoginPage() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   suppressHydrationWarning
+                  id="email"
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -135,6 +161,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
+                  suppressHydrationWarning
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -186,13 +213,21 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 transition-colors text-sm font-medium text-slate-300">
+            <button 
+              type="button"
+              onClick={() => handleOAuth('github')}
+              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 transition-colors text-sm font-medium text-slate-300"
+            >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-3.96-1.385-.09-.225-.48-1.385-1.02-1.665-.435-.24-1.05-.81-.015-.825.975-.015 1.665.885 1.89 1.26 1.11 1.89 2.91 1.35 3.615 1.035.12-.81.435-1.35.795-1.665-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.45.39.855 1.155.855 2.325 0 1.68-.015 3.045-.015 3.465 0 .33.225.69.84.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z" />
               </svg>
               GitHub
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 transition-colors text-sm font-medium text-slate-300">
+            <button 
+              type="button"
+              onClick={() => handleOAuth('google')}
+              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 transition-colors text-sm font-medium text-slate-300"
+            >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />

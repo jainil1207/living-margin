@@ -34,10 +34,16 @@ export default function CatalogPage() {
         setIsAdmin(true);
       }
 
-      const { data, error } = await supabase.from("books").select("id, title, author, cover_url");
+      setIsLoading(true);
+      
+      const { data, error } = await supabase.from("books").select("id, title, author, cover_url, created_at").order('created_at', { ascending: false });
       if (data) {
-        setBooks(data);
+        const uniqueBooks = data.filter((book, index, self) => 
+          index === self.findIndex((b) => b.title === book.title)
+        );
+        setBooks(uniqueBooks);
       }
+      
       setIsLoading(false);
     };
     fetchBooks();
@@ -48,9 +54,9 @@ export default function CatalogPage() {
   const filteredBooks = books.filter(b => {
     // We don't have categories in DB right now, so we just filter by All
     const matchesTab = activeTab === "All"; 
-    const matchesSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          b.author.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
+    const titleMatch = b.title ? b.title.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    const authorMatch = b.author ? b.author.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    return matchesTab && (titleMatch || authorMatch);
   });
 
   return (
@@ -111,7 +117,7 @@ export default function CatalogPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {filteredBooks.map((book, i) => {
-            const color = fallbackColors[book.title.length % fallbackColors.length];
+            const color = fallbackColors[(book.title?.length || 0) % fallbackColors.length];
             return (
               <motion.div 
                 key={book.id}

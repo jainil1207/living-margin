@@ -1,28 +1,83 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, BookText, TrendingUp, Clock, Flame } from "lucide-react";
+import { BookOpen, BookText, TrendingUp, Clock, Flame, PenTool } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default function DashboardPage() {
+  const [recentBooks, setRecentBooks] = useState<any[]>([]);
+  const [recentHighlights, setRecentHighlights] = useState<any[]>([]);
+  const [firstName, setFirstName] = useState("Reader");
+  const [statsData, setStatsData] = useState({ totalBooks: 0, totalAnnotations: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Get profile name
+      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", session.user.id).single();
+      if (profile?.full_name) {
+        setFirstName(profile.full_name.split(" ")[0]);
+      }
+
+      // Fetch a few books
+      const { data: books } = await supabase.from("books").select("*").order('created_at', { ascending: false });
+      if (books) {
+        const uniqueBooks = books.filter((book, index, self) => 
+          index === self.findIndex((b) => b.title === book.title)
+        ).slice(0, 2);
+        setRecentBooks(uniqueBooks);
+      }
+
+      // Fetch user's recent highlights
+      const { data: notes } = await supabase
+        .from("annotations")
+        .select("*, books(title)")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(3);
+        
+      if (notes) {
+        setRecentHighlights(notes);
+        // Also get total count
+        const { count } = await supabase.from("annotations").select("*", { count: 'exact', head: true }).eq("user_id", session.user.id);
+        setStatsData({
+          totalBooks: books ? books.length : 0, // Simplified for now
+          totalAnnotations: count || 0
+        });
+      }
+      
+      setIsLoading(false);
+    };
+
+    fetchDashboardData();
+  }, [supabase]);
+
   const stats = [
-    { label: "Books Read", value: "12", icon: BookText, color: "text-indigo-400", bg: "bg-indigo-500/20", border: "border-indigo-500/30" },
-    { label: "Total Annotations", value: "348", icon: PenToolPlaceholder, color: "text-rose-400", bg: "bg-rose-500/20", border: "border-rose-500/30" },
-    { label: "Reading Streak", value: "5 Days", icon: Flame, color: "text-orange-400", bg: "bg-orange-500/20", border: "border-orange-500/30" },
-    { label: "Hours Read", value: "42h", icon: Clock, color: "text-teal-400", bg: "bg-teal-500/20", border: "border-teal-500/30" },
+    { label: "Books in Library", value: statsData.totalBooks.toString(), icon: BookText, color: "text-indigo-400", bg: "bg-indigo-500/20", border: "border-indigo-500/30" },
+    { label: "Total Annotations", value: statsData.totalAnnotations.toString(), icon: PenTool, color: "text-rose-400", bg: "bg-rose-500/20", border: "border-rose-500/30" },
+    { label: "Reading Streak", value: "1 Day", icon: Flame, color: "text-orange-400", bg: "bg-orange-500/20", border: "border-orange-500/30" },
+    { label: "Hours Read", value: "2h", icon: Clock, color: "text-teal-400", bg: "bg-teal-500/20", border: "border-teal-500/30" },
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 p-6 md:p-8">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Good evening, Jainil</h1>
+          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Good evening, {firstName}</h1>
           <p className="text-slate-400">Here is what is happening in your library today.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all shadow-[0_0_15px_-3px_rgba(79,70,229,0.4)]">
+        <Link href="/catalog" className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-all shadow-[0_0_15px_-3px_rgba(79,70,229,0.4)]">
           <BookOpen className="w-4 h-4" />
           Continue Reading
-        </button>
+        </Link>
       </div>
 
       {/* Stats Grid */}
@@ -56,25 +111,35 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-indigo-400" />
-              Recently Opened
+              Recently Added Books
             </h2>
-            <button className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">View all</button>
+            <Link href="/catalog" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">View all</Link>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="group relative bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex gap-4 hover:bg-slate-800/50 transition-colors cursor-pointer overflow-hidden">
-                <div className="w-20 h-28 bg-slate-800 rounded-lg flex-shrink-0 shadow-lg" />
+            {isLoading ? (
+               <div className="text-slate-400 p-4">Loading books...</div>
+            ) : recentBooks.length === 0 ? (
+               <div className="text-slate-400 p-4">No books in library yet.</div>
+            ) : recentBooks.map((book) => (
+              <Link href={`/reader/${book.id}`} key={book.id} className="group relative bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex gap-4 hover:bg-slate-800/50 transition-colors cursor-pointer overflow-hidden">
+                <div className="w-20 h-28 bg-slate-800 rounded-lg flex-shrink-0 shadow-lg overflow-hidden">
+                  {book.cover_url ? (
+                    <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-600"><BookOpen className="w-6 h-6" /></div>
+                  )}
+                </div>
                 <div className="flex flex-col justify-center">
-                  <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">The Psychology of Money</h3>
-                  <p className="text-sm text-slate-400 mb-3">Morgan Housel</p>
+                  <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">{book.title}</h3>
+                  <p className="text-sm text-slate-400 mb-3">{book.author}</p>
                   
                   <div className="w-full bg-slate-800 rounded-full h-1.5 mb-1">
-                    <div className="bg-indigo-500 h-1.5 rounded-full w-[45%]" />
+                    <div className="bg-indigo-500 h-1.5 rounded-full w-[0%]" />
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">45% Complete</p>
+                  <p className="text-xs text-slate-500 font-medium">0% Complete</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -84,22 +149,25 @@ export default function DashboardPage() {
           <h2 className="text-xl font-bold text-white">Recent Highlights</h2>
           <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6">
             <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="relative pl-4 border-l-2 border-slate-800">
+              {isLoading ? (
+                 <p className="text-sm text-slate-400">Loading highlights...</p>
+              ) : recentHighlights.length === 0 ? (
+                 <p className="text-sm text-slate-400">No highlights yet. Start reading to add some!</p>
+              ) : recentHighlights.map((note) => (
+                <div key={note.id} className="relative pl-4 border-l-2 border-slate-800">
                   <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-rose-500" />
                   <p className="text-sm text-slate-300 italic mb-2 line-clamp-2">
-                    "True wealth is what you don't see. It's the cars not purchased, the diamonds not bought..."
+                    &quot;{note.highlight_text || note.note_text}&quot;
                   </p>
-                  <p className="text-xs text-slate-500 font-medium">— Chapter 4</p>
+                  <p className="text-xs text-slate-500 font-medium truncate">— {note.books?.title || "Unknown Book"}</p>
                 </div>
               ))}
             </div>
-            <button className="w-full mt-6 py-2.5 rounded-xl border border-slate-700 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            <Link href="/annotations" className="block text-center w-full mt-6 py-2.5 rounded-xl border border-slate-700 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
               View all highlights
-            </button>
+            </Link>
           </div>
         </div>
-
       </div>
     </div>
   );
