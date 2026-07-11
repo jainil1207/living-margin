@@ -25,7 +25,7 @@ export default function LandingPage() {
 
         <div className="relative z-10 max-w-5xl space-y-8 mt-12">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mx-auto w-fit flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/50 border border-indigo-500/30 text-indigo-300 text-sm font-medium backdrop-blur-sm"
@@ -35,7 +35,7 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-6xl md:text-8xl font-extrabold tracking-tighter text-white leading-[1.1]"
@@ -47,7 +47,7 @@ export default function LandingPage() {
           </motion.h1>
           
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-lg md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed font-light"
@@ -56,7 +56,7 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"

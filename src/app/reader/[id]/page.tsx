@@ -1,17 +1,98 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Settings, Search, MessageSquare, ChevronRight, Bookmark } from "lucide-react";
+import { ArrowLeft, Settings, Search, Bookmark } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
 
-export default function ReaderPage({ params }: { params: { id: string } }) {
-  const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
+export default function ReaderPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = use(params);
+  const id = unwrappedParams.id;
+
+  const [book, setBook] = useState<any>(null);
+  const [annotations, setAnnotations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteText, setNewNoteText] = useState("");
+  const [newHighlightText, setNewHighlightText] = useState("");
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch book
+      const { data: bookData, error: bookError } = await supabase.from("books").select("*").eq("id", id).single();
+      if (bookError) {
+        console.error("Book fetch error:", bookError);
+        setErrorMsg(bookError.message);
+      }
+      if (bookData) {
+        setBook(bookData);
+      }
+      
+      // Fetch annotations
+      const { data: annotationsData, error: annError } = await supabase.from("annotations").select("*").eq("book_id", id).order('created_at', { ascending: false });
+      if (annError) {
+         console.error("Annotations fetch error:", annError);
+      }
+      if (annotationsData) {
+        setAnnotations(annotationsData);
+      }
+      setIsLoading(false);
+    };
+    fetchData();
+  }, [id]);
+
+  const handleSaveNote = async () => {
+    if (!newNoteText.trim()) return;
+    
+    // Get current user
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert("You must be logged in to save annotations.");
+      return;
+    }
+
+    const newAnnotation = {
+      user_id: session.user.id,
+      book_id: id,
+      highlight_text: newHighlightText.trim() || "General Note",
+      note_text: newNoteText.trim(),
+    };
+
+    const { data, error } = await supabase.from("annotations").insert(newAnnotation).select().single();
+    
+    if (error) {
+      alert("Failed to save note: " + error.message);
+    } else if (data) {
+      setAnnotations([data, ...annotations]);
+      setIsAddingNote(false);
+      setNewNoteText("");
+      setNewHighlightText("");
+    }
+  };
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-[#0A0F1C] flex items-center justify-center text-white">Loading book...</div>;
+  }
+
+  if (!book) {
+    return <div className="min-h-screen bg-[#0A0F1C] flex flex-col items-center justify-center text-white gap-4">
+      <p>Book not found.</p>
+      {errorMsg && <p className="text-rose-400 max-w-lg text-center bg-rose-900/20 p-4 rounded-xl border border-rose-900/50">Error details: {errorMsg}</p>}
+      <Link href="/catalog" className="text-indigo-400 hover:underline">Back to library</Link>
+    </div>;
+  }
+
+  // Split book content into paragraphs
+  const paragraphs = book.content.split('\n').filter((p: string) => p.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-[#0A0F1C] text-slate-300 font-serif selection:bg-indigo-500/30">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[#0A0F1C]/90 backdrop-blur-md border-b border-white/5 font-sans">
+       <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[#0A0F1C]/90 backdrop-blur-md border-b border-white/5 font-sans">
         <Link href="/catalog" className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Back to Library
@@ -22,129 +103,146 @@ export default function ReaderPage({ params }: { params: { id: string } }) {
           <button className="hover:text-white transition-colors p-2"><Settings className="w-5 h-5" /></button>
         </div>
       </header>
-
-      {/* Main Layout: Reader + Margin */}
+      
       <div className="flex max-w-[1400px] mx-auto">
-        
-        {/* Left Spacer (for balance) */}
         <div className="hidden lg:block flex-1 max-w-[200px]" />
-
-        {/* Center: The Text */}
-        <main className="flex-[2] max-w-[700px] px-8 py-16 lg:px-12 leading-relaxed text-lg lg:text-xl text-slate-300">
+        
+        <main className="flex-[2] max-w-[700px] px-8 py-16 lg:px-12 leading-relaxed text-lg lg:text-xl text-slate-300 relative">
           <div className="mb-16 text-center font-sans">
-            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-4 font-serif">Meditations</h1>
-            <p className="text-slate-400 text-sm uppercase tracking-widest">Marcus Aurelius</p>
+            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-4 font-serif">{book.title}</h1>
+            <p className="text-slate-400 text-sm uppercase tracking-widest">{book.author}</p>
           </div>
 
-          <p className="mb-8">
-            Begin the morning by saying to thyself, I shall meet with the busy-body, the ungrateful, arrogant, deceitful, envious, unsocial. All these things happen to them by reason of their ignorance of what is good and evil. But I who have seen the nature of the good that it is beautiful, and of the bad that it is ugly...
-          </p>
+          <div 
+            className="space-y-8" 
+            onMouseUp={() => {
+              const selection = window.getSelection();
+              if (selection && selection.toString().length > 0) {
+                 setNewHighlightText(selection.toString());
+              }
+            }}
+          >
+            {paragraphs.map((p: string, idx: number) => {
+              // Simple highlighter logic: split the paragraph by each annotation's highlight text
+              let elements: (string | React.ReactNode)[] = [p];
 
-          <p className="mb-8">
-            <span 
-              onClick={() => setActiveHighlight("h1")}
-              className={`cursor-pointer transition-colors duration-300 rounded px-1 ${
-                activeHighlight === "h1" ? "bg-indigo-600/60 text-white" : "bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-200"
-              }`}
-            >
-              Every moment think steadily as a Roman and a man to do what thou hast in hand with perfect and simple dignity, and feeling of affection, and freedom, and justice;
-            </span> 
-            {" "}and to give thyself relief from all other thoughts. And thou wilt give thyself relief, if thou doest every act of thy life as if it were the last.
-          </p>
+              annotations.forEach(note => {
+                if (note.highlight_text && note.highlight_text !== "General Note") {
+                  const newElements: (string | React.ReactNode)[] = [];
+                  elements.forEach(el => {
+                    if (typeof el === "string") {
+                      // Only highlight if the text exists in this chunk
+                      if (el.includes(note.highlight_text)) {
+                        const parts = el.split(note.highlight_text);
+                        for (let i = 0; i < parts.length; i++) {
+                          newElements.push(parts[i]);
+                          if (i < parts.length - 1) {
+                            newElements.push(
+                              <span 
+                                key={`${note.id}-${i}`}
+                                className="bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-200 transition-colors duration-300 rounded px-1 shadow-[0_0_10px_rgba(79,70,229,0.2)] cursor-pointer"
+                              >
+                                {note.highlight_text}
+                              </span>
+                            );
+                          }
+                        }
+                      } else {
+                        newElements.push(el);
+                      }
+                    } else {
+                      newElements.push(el);
+                    }
+                  });
+                  elements = newElements;
+                }
+              });
 
-          <p className="mb-8">
-            Thou seest how few the things are, the which if a man lays hold of, he is able to live a life which flows in quiet, and is like the existence of the gods; for the gods on their part will require nothing more from him who observes these things.
-          </p>
-
-          <p className="mb-8">
-            <span 
-              onClick={() => setActiveHighlight("h2")}
-              className={`cursor-pointer transition-colors duration-300 rounded px-1 ${
-                activeHighlight === "h2" ? "bg-rose-600/60 text-white" : "bg-rose-900/60 hover:bg-rose-800/60 text-rose-200"
-              }`}
-            >
-              Do wrong to thyself, do wrong to thyself, my soul; but thou wilt no longer have the opportunity of honoring thyself. Every man&apos;s life is sufficient.
-            </span> 
-            {" "}But thine is nearly finished, though thy soul reverences not itself, but places thy felicity in the souls of others.
-          </p>
-
-          <p className="mb-8">
-            Do the things external which fall upon thee distract thee? Give thyself time to learn something new and good, and cease to be whirled around. But then thou must take care to avoid another error. For they are idlers even in action who have no aim in life to which they can direct every movement and, finally, every thought.
-          </p>
+              return (
+                <p key={idx} className="mb-8">{elements.map((el, i) => <span key={i}>{el}</span>)}</p>
+              );
+            })}
+          </div>
         </main>
 
-        {/* Right: The Living Margin */}
-        <aside className="hidden md:block flex-[1.5] max-w-[400px] border-l border-white/5 bg-[#0A0F1C] relative">
-          <div className="sticky top-16 h-[calc(100vh-64px)] p-6 overflow-y-auto font-sans">
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
-              The Living Margin
+        {/* Right Margin */}
+        <aside className="hidden md:flex flex-col flex-[1.5] max-w-[400px] border-l border-white/5 bg-[#0A0F1C] relative">
+          <div className="sticky top-16 h-[calc(100vh-64px)] p-6 overflow-y-auto font-sans flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                The Living Margin
+              </div>
+              <button 
+                onClick={() => setIsAddingNote(!isAddingNote)}
+                className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase"
+              >
+                + Add Note
+              </button>
             </div>
 
-            <AnimatePresence mode="wait">
-              {activeHighlight === "h1" && (
-                <motion.div
-                  key="note1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="bg-indigo-950/30 border border-indigo-500/20 p-5 rounded-2xl mb-6 shadow-xl"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-[10px] text-white font-bold">JD</div>
-                      <span className="text-xs text-slate-400">Jainil Trivedi</span>
-                    </div>
-                    <span className="text-xs text-slate-500">2 mins ago</span>
-                  </div>
-                  <p className="text-sm text-slate-300 mb-4">
-                    This is a profound stoic realization. We must treat every action as if it were our final one to truly focus our mind and eliminate distractions.
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <button className="flex items-center gap-1 hover:text-indigo-400 transition-colors"><MessageSquare className="w-3 h-3"/> Reply</button>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeHighlight === "h2" && (
-                <motion.div
-                  key="note2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="bg-rose-950/30 border border-rose-500/20 p-5 rounded-2xl mb-6 shadow-xl"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-[10px] text-white font-bold">JD</div>
-                      <span className="text-xs text-slate-400">Jainil Trivedi</span>
-                    </div>
-                    <span className="text-xs text-slate-500">1 day ago</span>
-                  </div>
-                  <p className="text-sm text-slate-300 mb-4">
-                    I need to remember this when I feel overwhelmed. The only mind I can control is my own.
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <button className="flex items-center gap-1 hover:text-rose-400 transition-colors"><MessageSquare className="w-3 h-3"/> Reply</button>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeHighlight === null && (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="h-full flex flex-col items-center justify-center text-center text-slate-500 pb-32"
-                >
-                  <p className="text-sm">Select highlighted text in the book to view annotations in the margin.</p>
-                </motion.div>
+            <AnimatePresence>
+              {isAddingNote && (
+                 <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-6 shadow-xl"
+                 >
+                   <div className="mb-3">
+                     <label className="text-xs text-slate-400 mb-1 block">Highlight (Tip: Select text first!)</label>
+                     <input 
+                       type="text" 
+                       value={newHighlightText}
+                       onChange={e => setNewHighlightText(e.target.value)}
+                       placeholder="Select text in the book..."
+                       className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50"
+                     />
+                   </div>
+                   <div className="mb-3">
+                     <label className="text-xs text-slate-400 mb-1 block">Your Note</label>
+                     <textarea 
+                       value={newNoteText}
+                       onChange={e => setNewNoteText(e.target.value)}
+                       className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 h-24 resize-none focus:outline-none focus:border-indigo-500/50"
+                       placeholder="What are your thoughts?"
+                     ></textarea>
+                   </div>
+                   <div className="flex justify-end gap-2">
+                     <button onClick={() => setIsAddingNote(false)} className="px-3 py-1.5 rounded text-xs text-slate-400 hover:text-slate-300">Cancel</button>
+                     <button onClick={handleSaveNote} className="px-3 py-1.5 rounded text-xs bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">Save</button>
+                   </div>
+                 </motion.div>
               )}
             </AnimatePresence>
 
+            <div className="flex-1 space-y-4">
+              {annotations.map(note => (
+                <div key={note.id} className="bg-indigo-950/20 border border-indigo-500/10 p-5 rounded-2xl shadow-lg hover:border-indigo-500/30 transition-colors">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-slate-500">{new Date(note.created_at).toLocaleDateString()}</span>
+                  </div>
+                  {note.highlight_text !== "General Note" && (
+                    <div className="relative mb-3">
+                      <div className="absolute -left-2 -top-1 text-2xl text-slate-700 opacity-30 font-serif">"</div>
+                      <p className="text-slate-400 font-serif leading-relaxed text-sm italic relative z-10 line-clamp-3">
+                        {note.highlight_text}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-sm text-slate-300 mb-2">
+                    {note.note_text}
+                  </p>
+                </div>
+              ))}
+              
+              {annotations.length === 0 && !isAddingNote && (
+                <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 pb-32">
+                  <p className="text-sm mt-10">No annotations yet.<br/>Click "+ Add Note" to create one!</p>
+                </div>
+              )}
+            </div>
           </div>
         </aside>
-
       </div>
     </div>
   );
