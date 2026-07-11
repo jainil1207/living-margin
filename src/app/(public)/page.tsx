@@ -58,7 +58,7 @@ export default function LandingPage() {
             initial={{ opacity: 1, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-6xl md:text-8xl font-extrabold tracking-tighter text-white leading-[1.1]"
+            className="text-5xl sm:text-6xl md:text-8xl font-extrabold tracking-tighter text-white leading-[1.1]"
           >
             Read Between the <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 via-cyan-400 to-teal-300">

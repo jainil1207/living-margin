@@ -204,7 +204,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
        <header className={`sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md border-b font-sans transition-colors duration-300 ${themeClasses.headerBg}`}>
         <Link href="/catalog" className={`flex items-center gap-2 text-sm transition-colors ${themeClasses.headerText}`}>
           <ArrowLeft className="w-4 h-4" />
-          Back to Library
+          <span className="hidden sm:inline">Back to Library</span>
         </Link>
         <div className={`flex items-center gap-1 sm:gap-2 md:gap-4 ${themeClasses.headerText}`}>
           <button 
