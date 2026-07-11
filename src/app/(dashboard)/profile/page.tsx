@@ -26,11 +26,8 @@ export default function ProfilePage() {
       setUser(session.user);
 
       // Fetch profile from DB
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
-      if (data) {
-        setFullName(data.full_name || "");
-        setAvatarUrl(data.avatar_url || "");
-      }
+      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+      // Purposely NOT setting fullName and avatarUrl here so the inputs start empty
       setIsLoading(false);
     };
     loadProfile();

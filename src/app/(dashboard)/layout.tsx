@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { 
   BookOpen, 
   LayoutDashboard, 
@@ -23,7 +24,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Auth Guard
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push("/login");
+      } else {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, [router, supabase]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Loading...</div>;
+  }
 
   const navItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -70,7 +96,7 @@ export default function DashboardLayout({
         </div>
 
         <div className="p-4 border-t border-slate-800">
-          <button className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all">
+          <button onClick={handleSignOut} className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all">
             <LogOut className="w-4 h-4 text-slate-500" />
             Sign Out
           </button>
@@ -106,6 +132,13 @@ export default function DashboardLayout({
                   </Link>
                 );
               })}
+            </div>
+            
+            <div className="p-4 border-t border-slate-800 mt-auto">
+              <button onClick={handleSignOut} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all">
+                <LogOut className="w-5 h-5 text-slate-500" />
+                Sign Out
+              </button>
             </div>
           </div>
         </div>

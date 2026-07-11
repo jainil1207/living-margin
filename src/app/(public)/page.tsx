@@ -2,8 +2,20 @@
 
 import { motion } from "framer-motion";
 import { BookOpen, Sparkles, ArrowRight, MessageSquare, Share2, Layers, Users, Zap } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LandingPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+  }, [supabase]);
+
   return (
     <div className="flex flex-col w-full bg-slate-950 text-slate-50 selection:bg-indigo-500/30">
       
@@ -61,14 +73,14 @@ export default function LandingPage() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"
           >
-            <button className="group relative px-8 py-4 rounded-full bg-white text-slate-950 font-bold flex items-center gap-2 transition-all hover:scale-105 active:scale-95 w-full sm:w-auto shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.6)]">
+            <Link href="/login" className="group relative px-8 py-4 rounded-full bg-white text-slate-950 font-bold flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 w-full sm:w-auto shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.6)]">
               <BookOpen className="w-5 h-5" />
               Start Reading for Free
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button className="px-8 py-4 rounded-full bg-slate-900/50 text-white font-semibold flex items-center gap-2 transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 w-full sm:w-auto border border-slate-700 backdrop-blur-sm">
+            </Link>
+            <Link href={isAuthenticated ? "/catalog" : "/login"} className="px-8 py-4 rounded-full bg-slate-900/50 text-white font-semibold flex items-center justify-center gap-2 transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 w-full sm:w-auto border border-slate-700 backdrop-blur-sm">
               Explore the Catalog
-            </button>
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -154,10 +166,10 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-3xl mx-auto space-y-8">
           <h2 className="text-5xl font-bold tracking-tight">Ready to upgrade your library?</h2>
           <p className="text-xl text-slate-400 pb-4">Join The Living Margin today and bring your books to life.</p>
-          <button className="px-10 py-5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-lg flex items-center gap-2 mx-auto transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_-5px_rgba(79,70,229,0.5)]">
+          <Link href="/login" className="w-fit px-10 py-5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-lg flex items-center justify-center gap-2 mx-auto transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_-5px_rgba(79,70,229,0.5)]">
             Create Your Free Account
             <Zap className="w-5 h-5" />
-          </button>
+          </Link>
         </div>
         
         <div className="mt-32 pt-8 border-t border-slate-800 text-slate-500 flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto">
