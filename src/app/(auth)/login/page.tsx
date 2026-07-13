@@ -83,9 +83,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex-1 relative flex items-center justify-center p-4 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+      {/* Background glow contained to prevent scrollbars */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[100px] rounded-full" />
+      </div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
