@@ -67,8 +67,8 @@ export default function CommunityFeedPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-10">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
+      <div className="mb-8 md:mb-10">
         <h1 className="text-3xl font-bold text-white mb-2">Community Margins</h1>
         <p className="text-slate-400">Discover thoughts and highlights shared by other readers.</p>
       </div>
@@ -87,9 +87,11 @@ export default function CommunityFeedPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -4, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               transition={{ delay: i * 0.05 }}
               key={note.id}
-              className="break-inside-avoid bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-colors group"
+              className="break-inside-avoid bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 group"
             >
               <div className="p-5">
                 {/* Author Info */}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   BookOpen, 
   LayoutDashboard, 
@@ -173,10 +174,24 @@ export default function DashboardLayout({
       </aside>
 
       {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm">
-          <div className="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-            <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <motion.div 
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <Image 
                   src="/logo.png" 
@@ -254,9 +269,10 @@ export default function DashboardLayout({
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content Wrapper */}
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
