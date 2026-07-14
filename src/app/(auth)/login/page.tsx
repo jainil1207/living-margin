@@ -190,6 +190,7 @@ export default function LoginPage() {
             </div>
 
             <button 
+              suppressHydrationWarning
               type="submit"
               disabled={isSubmitting}
               className="w-full group relative px-8 py-3 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center gap-2 transition-all hover:bg-indigo-500 mt-6 shadow-[0_0_20px_-5px_rgba(79,70,229,0.4)] disabled:opacity-70 disabled:cursor-not-allowed"
