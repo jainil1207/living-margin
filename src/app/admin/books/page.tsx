@@ -76,7 +76,7 @@ export default function AdminBooksPage() {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items.map((item: any) => item.str).join(' ');
-        fullText += pageText + "\\n\\n";
+        fullText += pageText + "\n\n";
       }
       return fullText;
     } catch (err) {

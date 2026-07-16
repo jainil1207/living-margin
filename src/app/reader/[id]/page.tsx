@@ -22,6 +22,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
   const [isPublic, setIsPublic] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMarginOpen, setIsMobileMarginOpen] = useState(false);
 
@@ -90,6 +91,15 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
     fetchData();
   }, [id, supabase]);
 
+  // Debounce the search input so it doesn't freeze the app on large books
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 400); // 400ms delay
+
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
   const handleSaveNote = async () => {
     if (!newNoteText.trim()) return;
     
@@ -148,8 +158,9 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
     </div>;
   }
 
-  // Split book content into paragraphs
-  const paragraphs = book.content.split('\n').filter((p: string) => p.trim().length > 0);
+  // Replace literal '\n' that might have been saved in the DB by mistake during PDF upload
+  const cleanContent = book.content.replace(/\\n/g, '\n');
+  const paragraphs = cleanContent.split('\n').filter((p: string) => p.trim().length > 0);
 
   return (
     <div className="min-h-screen bg-white text-slate-800 font-serif selection:bg-terracotta/30">
@@ -176,14 +187,15 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                   <input
                     autoFocus
                     type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     placeholder="Search in book..."
                     className="w-full md:w-[200px] bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 md:py-1.5 md:pl-3 text-sm focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta font-medium transition-all"
                   />
                   <button 
                     onClick={() => {
                       setIsSearchOpen(false);
+                      setSearchInput("");
                       setSearchQuery("");
                     }} 
                     className="md:hidden p-2 text-slate-500 hover:text-charcoal bg-slate-50 rounded-xl border border-slate-200"
