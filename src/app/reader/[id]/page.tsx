@@ -166,19 +166,31 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
           <AnimatePresence>
             {isSearchOpen && (
               <motion.div 
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 200, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                className="overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-y-0 left-0 right-0 z-10 flex items-center bg-white px-6 md:static md:w-auto md:bg-transparent md:px-0"
               >
-                <input
-                  autoFocus
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search in book..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-1.5 px-3 text-sm focus:outline-none focus:border-slate-300 font-medium"
-                />
+                <div className="relative w-full flex items-center gap-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 md:hidden" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search in book..."
+                    className="w-full md:w-[200px] bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-4 md:py-1.5 md:pl-3 text-sm focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta font-medium transition-all"
+                  />
+                  <button 
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                    }} 
+                    className="md:hidden p-2 text-slate-500 hover:text-charcoal bg-slate-50 rounded-xl border border-slate-200"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
