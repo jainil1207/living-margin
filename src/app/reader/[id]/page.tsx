@@ -100,6 +100,19 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
     return () => clearTimeout(handler);
   }, [searchInput]);
 
+  // Scroll to the first search result when search query updates
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      const timer = setTimeout(() => {
+        const firstMatch = document.querySelector('.search-highlight');
+        if (firstMatch) {
+          firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery]);
+
   const handleSaveNote = async () => {
     if (!newNoteText.trim()) return;
     
@@ -309,7 +322,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                        parts.forEach((part, i) => {
                          if (part.toLowerCase() === searchLower) {
                            newElements.push(
-                             <span key={`search-${idx}-${i}`} className="bg-yellow-200 text-charcoal font-bold rounded-sm px-1">
+                             <span key={`search-${idx}-${i}`} className="search-highlight bg-yellow-200 text-charcoal font-bold rounded-sm px-1">
                                {part}
                              </span>
                            );
