@@ -312,12 +312,14 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
 
               if (searchQuery.trim().length > 0) {
                 const searchLower = searchQuery.toLowerCase();
+                const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const safeSearchQuery = escapeRegExp(searchQuery);
                 const newElements: (string | React.ReactNode)[] = [];
                 elements.forEach(el => {
                   if (typeof el === "string") {
                     const elLower = el.toLowerCase();
                     if (elLower.includes(searchLower)) {
-                       const regex = new RegExp(`(${searchQuery})`, "gi");
+                       const regex = new RegExp(`(${safeSearchQuery})`, "gi");
                        const parts = el.split(regex);
                        parts.forEach((part, i) => {
                          if (part.toLowerCase() === searchLower) {
