@@ -23,8 +23,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/admin/login");
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      router.push("/admin/login");
+    }
   };
 
   if (pathname === "/admin/login") {
@@ -39,24 +44,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex font-sans overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex font-sans overflow-hidden">
       
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 flex-col bg-slate-900 border-r border-slate-800 h-screen z-10 shadow-2xl shadow-rose-900/10">
-        <div className="h-20 flex items-center px-6 border-b border-slate-800">
+      <aside className="hidden md:flex w-72 flex-col bg-white border-r border-slate-200 h-screen z-10 shadow-sm">
+        <div className="h-20 flex items-center px-6 border-b border-slate-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center border border-rose-500/20 shadow-inner shadow-rose-500/20">
-              <Shield className="w-5 h-5 text-rose-500" />
+            <div className="w-10 h-10 bg-terracotta/10 rounded-xl flex items-center justify-center border border-terracotta/20 shadow-sm">
+              <Shield className="w-5 h-5 text-terracotta" />
             </div>
             <div>
-              <h2 className="font-bold tracking-tight text-white leading-tight">Admin Portal</h2>
-              <p className="text-xs text-rose-400 font-medium">Restricted Access</p>
+              <h2 className="font-bold tracking-tight text-charcoal leading-tight">Admin Portal</h2>
+              <p className="text-xs text-terracotta font-medium">Restricted Access</p>
             </div>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-2">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-3">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3">
             System Management
           </div>
           
@@ -68,28 +73,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${
                   isActive 
-                    ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" 
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent"
+                    ? "bg-terracotta/10 text-terracotta border border-terracotta/20" 
+                    : "text-slate-500 hover:text-charcoal hover:bg-slate-50 border border-transparent"
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive ? "text-rose-400" : "text-slate-500"}`} />
+                <item.icon className={`w-5 h-5 ${isActive ? "text-terracotta" : "text-slate-400"}`} />
                 {item.name}
               </Link>
             );
           })}
         </div>
 
-        <div className="p-4 border-t border-slate-800 flex flex-col gap-2">
+        <div className="p-4 border-t border-slate-200 flex flex-col gap-2">
           <Link 
             href="/catalog"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all border border-transparent"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:text-charcoal hover:bg-slate-50 transition-all border border-transparent"
           >
-            <Globe className="w-5 h-5 text-slate-500" />
+            <Globe className="w-5 h-5 text-slate-400" />
             Back to Main Site
           </Link>
           <button 
+            suppressHydrationWarning
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all border border-transparent text-left w-full"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-charcoal hover:bg-slate-800 hover:text-white transition-all border border-transparent text-left w-full"
           >
             <LogOut className="w-5 h-5" />
             Log Out
@@ -100,14 +106,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-4 z-20">
+        <header className="md:hidden h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 z-20">
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-rose-500" />
-            <span className="font-bold tracking-tight text-white">Admin</span>
+            <Shield className="w-6 h-6 text-terracotta" />
+            <span className="font-bold tracking-tight text-charcoal">Admin</span>
           </div>
           <button 
+            suppressHydrationWarning
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="w-10 h-10 flex items-center justify-center bg-slate-800 rounded-lg text-slate-300"
+            className="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-lg text-slate-500"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -115,11 +122,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm">
-            <div className="fixed inset-y-0 right-0 w-72 bg-slate-900 border-l border-slate-800 flex flex-col">
-              <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-                <span className="font-bold text-white">Admin Menu</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
+          <div className="md:hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm">
+            <div className="fixed inset-y-0 right-0 w-72 bg-white border-l border-slate-200 flex flex-col">
+              <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200">
+                <span className="font-bold text-charcoal">Admin Menu</span>
+                <button suppressHydrationWarning onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-charcoal">
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -129,24 +136,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     key={item.name} 
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium"
                   >
-                    <item.icon className="w-5 h-5 text-rose-400" />
+                    <item.icon className="w-5 h-5 text-terracotta" />
                     {item.name}
                   </Link>
                 ))}
               </div>
-              <div className="p-4 border-t border-slate-800 flex flex-col gap-2">
+              <div className="p-4 border-t border-slate-200 flex flex-col gap-2">
                 <Link 
                   href="/catalog"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium"
                 >
-                  <Globe className="w-5 h-5" />
+                  <Globe className="w-5 h-5 text-slate-400" />
                   Main Site
                 </Link>
                 <button 
+                  suppressHydrationWarning
                   onClick={handleSignOut}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 text-left w-full"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-charcoal hover:bg-slate-800 hover:text-white font-medium text-left w-full transition-colors"
                 >
                   <LogOut className="w-5 h-5" />
                   Log Out
@@ -157,8 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto relative">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-rose-900/20 via-slate-950/0 to-slate-950/0 pointer-events-none" />
+        <main className="flex-1 overflow-y-auto relative bg-slate-50">
           <div className="relative z-10 p-4 md:p-8">
             {children}
           </div>

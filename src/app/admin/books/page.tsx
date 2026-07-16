@@ -134,8 +134,8 @@ export default function AdminBooksPage() {
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Manage Library</h1>
-          <p className="text-slate-400">View and manage all uploaded books.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-charcoal mb-2">Manage Library</h1>
+          <p className="text-slate-500 font-medium">View and manage all uploaded books.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -151,13 +151,13 @@ export default function AdminBooksPage() {
               if (error) alert("Error seeding books: " + error.message);
               else { alert("Demo books added!"); fetchBooks(); }
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-charcoal hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-sm"
           >
             Seed Demo Books
           </button>
           <button
             onClick={() => setShowUploadForm(!showUploadForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-terracotta hover:bg-terracotta/90 text-white rounded-xl font-bold transition-all shadow-sm"
           >
             {showUploadForm ? "Cancel Upload" : <><BookPlus className="w-5 h-5" /> Upload New Book</>}
           </button>
@@ -165,56 +165,55 @@ export default function AdminBooksPage() {
       </div>
 
       {showUploadForm && (
-        <div className="bg-[#0f172a]/60 backdrop-blur-xl border border-indigo-500/20 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-          <h2 className="text-xl font-bold text-white mb-6">Upload Book PDF</h2>
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+          <h2 className="text-xl font-bold text-charcoal mb-6">Upload Book PDF</h2>
           <form onSubmit={handleUpload} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Book Title</label>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)} required className="w-full bg-[#1e293b]/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50" />
+                <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Book Title</label>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)} required className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-charcoal font-medium focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Author</label>
-                <input type="text" value={author} onChange={e => setAuthor(e.target.value)} required className="w-full bg-[#1e293b]/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50" />
+                <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Author</label>
+                <input type="text" value={author} onChange={e => setAuthor(e.target.value)} required className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-charcoal font-medium focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Description</label>
-              <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1e293b]/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 resize-none h-24" />
+              <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Description</label>
+              <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-charcoal font-medium focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm resize-none h-24" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Cover Image URL (Optional)</label>
-                <input type="url" value={coverUrl} onChange={e => setCoverUrl(e.target.value)} className="w-full bg-[#1e293b]/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50" />
+                <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Cover Image URL (Optional)</label>
+                <input type="url" value={coverUrl} onChange={e => setCoverUrl(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-charcoal font-medium focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 flex justify-between">
+                <label className="text-sm font-bold text-slate-500 uppercase tracking-wider flex justify-between">
                   <span>PDF File</span>
-                  <span className="text-xs text-indigo-400">Max 50MB</span>
+                  <span className="text-[10px] text-terracotta">Max 50MB</span>
                 </label>
-                <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] || null)} required className="w-full bg-[#1e293b]/50 border border-slate-700 rounded-xl px-4 py-3 text-slate-300 focus:outline-none focus:border-indigo-500/50 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/10 file:text-indigo-400" />
+                <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] || null)} required className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-charcoal font-medium focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-terracotta/10 file:text-terracotta hover:file:bg-terracotta/20 file:transition-colors" />
               </div>
             </div>
-            <button type="submit" disabled={isUploading} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+            <button type="submit" disabled={isUploading} className="w-full py-4 bg-terracotta hover:bg-terracotta/90 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm">
               {isUploading ? <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</> : <><Upload className="w-5 h-5" /> Upload to Library</>}
             </button>
           </form>
         </div>
       )}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         {isLoadingBooks ? (
-          <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>
+          <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-400" /></div>
         ) : books.length === 0 ? (
           <div className="p-12 flex flex-col items-center text-center text-slate-500">
-            <Book className="w-12 h-12 mb-4 opacity-50" />
-            <p>No books uploaded yet.</p>
+            <Book className="w-12 h-12 mb-4 text-slate-300" />
+            <p className="font-medium">No books uploaded yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+            <table className="w-full text-left text-sm text-charcoal">
+              <thead className="bg-slate-50 text-xs uppercase tracking-wider font-bold text-slate-500 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 rounded-tl-2xl">Book</th>
                   <th className="px-6 py-4">Author</th>
@@ -222,29 +221,29 @@ export default function AdminBooksPage() {
                   <th className="px-6 py-4 text-right rounded-tr-2xl">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-slate-100">
                 {books.map((book) => (
-                  <tr key={book.id} className="hover:bg-slate-800/20 transition-colors">
+                  <tr key={book.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {book.cover_url ? (
-                          <div className="relative w-10 h-14 rounded overflow-hidden shrink-0">
+                          <div className="relative w-10 h-14 rounded overflow-hidden shrink-0 shadow-sm border border-slate-200">
                             <Image src={book.cover_url} alt={book.title} fill className="object-cover" />
                           </div>
                         ) : (
-                          <div className="w-10 h-14 bg-slate-800 rounded flex items-center justify-center shrink-0">
-                            <Book className="w-5 h-5 text-slate-600" />
+                          <div className="w-10 h-14 bg-slate-100 rounded flex items-center justify-center shrink-0 border border-slate-200">
+                            <Book className="w-5 h-5 text-slate-400" />
                           </div>
                         )}
-                        <span className="font-medium text-white line-clamp-1">{book.title}</span>
+                        <span className="font-bold text-charcoal line-clamp-1">{book.title}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{book.author}</td>
-                    <td className="px-6 py-4 text-slate-500">{new Date(book.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600">{book.author}</td>
+                    <td className="px-6 py-4 text-slate-500 font-medium">{new Date(book.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-right">
                       <button 
                         onClick={() => handleDeleteBook(book.id, book.file_url)}
-                        className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                        className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                         title="Delete Book"
                       >
                         <Trash2 className="w-5 h-5" />

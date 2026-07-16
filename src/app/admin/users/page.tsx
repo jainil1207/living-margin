@@ -37,69 +37,70 @@ export default function AdminUsersPage() {
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2">User Accounts</h1>
-          <p className="text-slate-400">View all registered users on the platform.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-charcoal mb-2">User Accounts</h1>
+          <p className="text-slate-500 font-medium">View all registered users on the platform.</p>
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-slate-800 bg-slate-900/50">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-200 bg-slate-50">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input 
+              suppressHydrationWarning
               type="text" 
               placeholder="Search by name or ID..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-10 pr-4 text-sm text-slate-300 focus:outline-none focus:border-indigo-500/50 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-lg py-2 pl-10 pr-4 text-sm font-medium text-charcoal focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm"
             />
           </div>
         </div>
 
         {isLoading ? (
-          <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>
+          <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-400" /></div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-12 flex flex-col items-center text-center text-slate-500">
-            <Users className="w-12 h-12 mb-4 opacity-50" />
-            <p>No users found.</p>
+            <Users className="w-12 h-12 mb-4 text-slate-300" />
+            <p className="font-medium">No users found.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-800/50 text-xs uppercase font-semibold text-slate-400 border-b border-slate-800">
+            <table className="w-full text-left text-sm text-charcoal">
+              <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-500 tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4">User</th>
                   <th className="px-6 py-4">Bio / Status</th>
                   <th className="px-6 py-4 text-right">Role</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-slate-100">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-800/20 transition-colors">
+                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center shrink-0 border border-slate-700">
+                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0 border border-slate-200 shadow-sm">
                           {user.avatar_url ? (
                             <img src={user.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
                           ) : (
-                            <UserCircle className="w-6 h-6 text-slate-500" />
+                            <UserCircle className="w-6 h-6 text-slate-400" />
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-white">
+                          <div className="font-bold text-charcoal">
                             {user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Anonymous User'}
                           </div>
-                          <div className="text-xs text-slate-500 font-mono mt-0.5" title={user.id}>
+                          <div className="text-xs text-slate-400 font-mono mt-0.5" title={user.id}>
                             ID: {user.id.substring(0, 8)}...
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-400 max-w-[200px] truncate">
-                      {user.bio || <span className="italic opacity-50">No bio provided</span>}
+                    <td className="px-6 py-4 font-medium text-slate-600 max-w-[200px] truncate">
+                      {user.bio || <span className="italic text-slate-400">No bio provided</span>}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] uppercase tracking-wider font-bold bg-slate-100 text-slate-500 border border-slate-200">
                         Reader
                       </span>
                     </td>

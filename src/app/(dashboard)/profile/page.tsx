@@ -87,62 +87,65 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-charcoal/20 border-t-charcoal rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto flex flex-col lg:flex-row gap-10">
+    <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto flex flex-col lg:flex-row gap-10">
       
       {/* Profile Editor */}
       <div className="w-full lg:w-1/3 space-y-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">My Profile</h1>
-          <p className="text-slate-400">Manage your identity and appearance.</p>
+          <h1 className="text-3xl font-heading font-bold text-charcoal mb-2">My Profile</h1>
+          <p className="text-slate-500 font-medium">Manage your identity and appearance.</p>
         </div>
 
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+        <motion.div 
+           whileHover={{ y: -4, scale: 1.01 }}
+           className="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-sm transition-colors transition-shadow duration-300 hover:shadow-md hover:border-slate-300"
+        >
            {/* Abstract Background Decoration */}
-           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+           <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
            
            <div className="flex justify-center mb-8 relative z-10">
              <div className="relative">
                {avatarUrl ? (
                  // eslint-disable-next-line @next/next/no-img-element
-                 <img src={avatarUrl} alt="Avatar" className="w-32 h-32 rounded-full object-cover border-4 border-slate-800 bg-slate-900 shadow-xl" />
+                 <img src={avatarUrl} alt="Avatar" className="w-32 h-32 rounded-full object-cover border-4 border-white bg-slate-100 shadow-md" />
                ) : (
-                 <div className="w-32 h-32 rounded-full bg-indigo-500/20 border-4 border-slate-800 flex items-center justify-center shadow-xl">
-                   <User className="w-12 h-12 text-indigo-400" />
+                 <div className="w-32 h-32 rounded-full bg-slate-100 border-4 border-white flex items-center justify-center shadow-md">
+                   <User className="w-12 h-12 text-slate-400" />
                  </div>
                )}
              </div>
            </div>
 
-           <div className="space-y-4 relative z-10">
+           <div className="space-y-5 relative z-10">
              <div>
-               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Display Name</label>
+               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Display Name</label>
                <div className="relative">
-                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                  <input 
                    type="text" 
                    value={fullName}
                    onChange={e => setFullName(e.target.value)}
-                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                   className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-charcoal focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm"
                    placeholder="Your name"
                  />
                </div>
              </div>
              
              <div>
-               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Avatar Image URL</label>
+               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Avatar Image URL</label>
                <div className="relative">
-                 <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                 <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                  <input 
                    type="url" 
                    value={avatarUrl}
                    onChange={e => setAvatarUrl(e.target.value)}
-                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                   className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-charcoal focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-colors shadow-sm"
                    placeholder="https://example.com/avatar.jpg"
                  />
                </div>
@@ -151,7 +154,7 @@ export default function ProfilePage() {
              <button 
                onClick={handleSaveProfile}
                disabled={isSaving}
-               className="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+               className="w-full mt-6 bg-charcoal hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
              >
                {isSaving ? (
                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -168,29 +171,29 @@ export default function ProfilePage() {
                )}
              </button>
            </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* User's Annotations */}
       <div className="w-full lg:w-2/3">
          <div className="mb-6 flex items-end justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">My Library Notes</h2>
-              <p className="text-slate-400">All of your highlights and thoughts across every book.</p>
+              <h2 className="text-2xl font-heading font-bold text-charcoal mb-2">My Library Notes</h2>
+              <p className="text-slate-500 font-medium">All of your highlights and thoughts across every book.</p>
             </div>
-            <div className="bg-indigo-500/10 text-indigo-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-indigo-500/20">
+            <div className="bg-terracotta/10 text-terracotta px-4 py-1.5 rounded-full text-sm font-bold border border-terracotta/20">
               {annotations.length} Notes Total
             </div>
          </div>
 
          {annotations.length === 0 ? (
-            <div className="text-center py-20 bg-slate-900/30 border border-slate-800 rounded-2xl">
-              <PenTool className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-300 mb-2">No notes yet</h3>
-              <p className="text-slate-500 max-w-sm mx-auto mb-6">
+            <div className="text-center py-20 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <PenTool className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-charcoal mb-2">No notes yet</h3>
+              <p className="text-slate-500 font-medium max-w-sm mx-auto mb-6">
                 You haven't added any notes to your books yet. Go read something and share your thoughts!
               </p>
-              <Link href="/catalog" className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-medium transition-colors">
+              <Link href="/catalog" className="bg-charcoal hover:bg-slate-800 text-white px-6 py-2.5 rounded-full font-bold transition-colors shadow-sm">
                 Go to Catalog
               </Link>
             </div>
@@ -200,29 +203,31 @@ export default function ProfilePage() {
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
                   key={note.id} 
-                  className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors"
+                  className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-slate-300 transition-colors transition-shadow duration-300 shadow-sm hover:shadow-md"
                 >
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mb-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-14 bg-slate-800 rounded shadow overflow-hidden">
+                      <div className="w-10 h-14 bg-slate-100 rounded overflow-hidden border border-slate-200">
                         {note.books?.cover_url && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={note.books.cover_url} alt="" className="w-full h-full object-cover" />
                         )}
                       </div>
                       <div>
-                        <div className="font-semibold text-slate-200">{note.books?.title || "Unknown Book"}</div>
-                        <div className="text-xs text-slate-500">{new Date(note.created_at).toLocaleDateString()}</div>
+                        <div className="font-bold text-charcoal">{note.books?.title || "Unknown Book"}</div>
+                        <div className="text-xs font-semibold text-slate-400">{new Date(note.created_at).toLocaleDateString()}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                        {note.is_public && (
-                         <span className="bg-emerald-500/10 text-emerald-400 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded">
+                         <span className="bg-slate-100 text-slate-600 text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-md">
                            Public
                          </span>
                        )}
-                       <Link href={`/reader/${note.book_id}`} className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white group">
+                       <Link href={`/reader/${note.book_id}`} className="p-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400 hover:text-charcoal group">
                          <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
                        </Link>
                     </div>
@@ -231,13 +236,13 @@ export default function ProfilePage() {
                   <div className="pl-14">
                     {note.highlight_text && note.highlight_text !== "General Note" && (
                       <div className="relative mb-3">
-                        <div className="absolute -left-3 -top-1 w-1 h-full bg-indigo-500/30 rounded-full" />
-                        <p className="text-sm font-serif italic text-slate-400 leading-relaxed">
+                        <div className="absolute -left-3 -top-1 w-1 h-full bg-slate-200 rounded-full" />
+                        <p className="text-sm font-serif italic text-slate-600 leading-relaxed">
                           "{note.highlight_text}"
                         </p>
                       </div>
                     )}
-                    <p className="text-slate-300 text-sm leading-relaxed">
+                    <p className="text-charcoal font-medium text-sm leading-relaxed">
                       {note.note_text}
                     </p>
                   </div>

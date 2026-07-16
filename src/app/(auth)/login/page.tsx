@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [errors, setErrors] = useState<{ email?: string; password?: string; server?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -55,8 +56,21 @@ export default function LoginPage() {
         return;
       }
 
-      // Success! Redirect to dashboard
-      router.push("/dashboard");
+      if (role === 'admin') {
+        if (data.session?.user?.user_metadata?.role !== 'admin') {
+          if (email === "trivedijainil88@gmail.com") {
+            await supabase.auth.updateUser({ data: { role: 'admin' } });
+          } else {
+            await supabase.auth.signOut();
+            setErrors({ server: "Unauthorized. Administrative access only." });
+            setIsSubmitting(false);
+            return;
+          }
+        }
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
       
     } catch (error: any) {
       setErrors({ server: error.message || "An error occurred during login" });
@@ -83,10 +97,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-      {/* Background glow contained to prevent scrollbars */}
+    <div className="relative min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 bg-offwhite">
+      {/* Subtle Background Glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[100px] rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-terracotta/5 blur-[100px] rounded-full" />
       </div>
 
       <motion.div 
@@ -95,7 +109,7 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-md"
       >
-        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl shadow-slate-200/50">
           
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center mb-4">
@@ -104,18 +118,18 @@ export default function LoginPage() {
                 alt="The Living Margin Logo" 
                 width={48} 
                 height={48} 
-                className="rounded-xl object-cover bg-slate-900 border border-slate-800 shadow-xl shadow-indigo-500/10"
+                className="rounded-xl object-cover border border-slate-100 shadow-sm"
               />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Welcome back</h1>
-            <p className="text-slate-400 text-sm">Enter your credentials to access your library</p>
+            <h1 className="text-3xl font-heading font-bold tracking-tight text-charcoal mb-2">Welcome back</h1>
+            <p className="text-slate-500 text-sm">Enter your credentials to access your library</p>
           </div>
 
           <AnimatePresence>
             {errors.server && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
-                className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 text-sm text-red-400"
+                className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm text-red-600"
               >
                 {errors.server}
               </motion.div>
@@ -123,10 +137,40 @@ export default function LoginPage() {
           </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Role Selector */}
+            <div className="relative flex bg-slate-100 p-1 rounded-xl mb-4 shadow-inner">
+              {/* Animated sliding box */}
+              <motion.div
+                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm border border-slate-200/50"
+                initial={false}
+                animate={{
+                  left: role === 'user' ? '4px' : 'calc(50%)',
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+              
+              <button 
+                suppressHydrationWarning
+                type="button"
+                onClick={() => setRole('user')}
+                className={`relative z-10 flex-1 py-2.5 text-sm font-bold rounded-lg transition-colors duration-200 ${role === 'user' ? 'text-terracotta' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Reader
+              </button>
+              <button 
+                suppressHydrationWarning
+                type="button"
+                onClick={() => setRole('admin')}
+                className={`relative z-10 flex-1 py-2.5 text-sm font-bold rounded-lg transition-colors duration-200 ${role === 'admin' ? 'text-terracotta' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Admin
+              </button>
+            </div>
+
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Email</label>
+              <label className="text-sm font-semibold text-charcoal">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   suppressHydrationWarning
                   id="email"
@@ -134,10 +178,10 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className={`w-full bg-slate-950 border rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full bg-offwhite border rounded-xl py-3 pl-10 pr-4 text-charcoal placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
                     errors.email 
-                      ? "border-red-500/50 focus:ring-red-500/50 focus:border-red-500" 
-                      : "border-slate-800 focus:ring-indigo-500/50 focus:border-indigo-500"
+                      ? "border-red-300 focus:ring-red-500/30 focus:border-red-500" 
+                      : "border-slate-200 focus:ring-terracotta/30 focus:border-terracotta"
                   }`}
                 />
               </div>
@@ -147,7 +191,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }} 
                     animate={{ opacity: 1, height: "auto" }} 
                     exit={{ opacity: 0, height: 0 }}
-                    className="text-xs font-medium text-red-400"
+                    className="text-xs font-medium text-red-500"
                   >
                     {errors.email}
                   </motion.p>
@@ -157,21 +201,21 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-300">Password</label>
-                <Link href="/forgot-password" className="text-xs font-medium text-indigo-400 hover:text-indigo-300">Forgot password?</Link>
+                <label className="text-sm font-semibold text-charcoal">Password</label>
+                <Link href="/forgot-password" className="text-xs font-semibold text-terracotta hover:text-[#c4654d]">Forgot password?</Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input 
                   suppressHydrationWarning
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full bg-slate-950 border rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full bg-offwhite border rounded-xl py-3 pl-10 pr-4 text-charcoal placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
                     errors.password 
-                      ? "border-red-500/50 focus:ring-red-500/50 focus:border-red-500" 
-                      : "border-slate-800 focus:ring-indigo-500/50 focus:border-indigo-500"
+                      ? "border-red-300 focus:ring-red-500/30 focus:border-red-500" 
+                      : "border-slate-200 focus:ring-terracotta/30 focus:border-terracotta"
                   }`}
                 />
               </div>
@@ -181,7 +225,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, height: 0 }} 
                     animate={{ opacity: 1, height: "auto" }} 
                     exit={{ opacity: 0, height: 0 }}
-                    className="text-xs font-medium text-red-400"
+                    className="text-xs font-medium text-red-500"
                   >
                     {errors.password}
                   </motion.p>
@@ -193,7 +237,7 @@ export default function LoginPage() {
               suppressHydrationWarning
               type="submit"
               disabled={isSubmitting}
-              className="w-full group relative px-8 py-3 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center gap-2 transition-all hover:bg-indigo-500 mt-6 shadow-[0_0_20px_-5px_rgba(79,70,229,0.4)] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full group relative px-8 py-3 rounded-xl bg-charcoal text-white font-bold flex items-center justify-center gap-2 transition-all hover:bg-slate-800 mt-6 shadow-subtle hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -210,16 +254,17 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 flex items-center justify-center space-x-4">
-            <div className="h-px bg-slate-800 flex-1"></div>
-            <span className="text-xs text-slate-500 font-medium uppercase">Or continue with</span>
-            <div className="h-px bg-slate-800 flex-1"></div>
+            <div className="h-px bg-slate-200 flex-1"></div>
+            <span className="text-xs text-slate-400 font-medium uppercase">Or continue with</span>
+            <div className="h-px bg-slate-200 flex-1"></div>
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-4">
             <button 
+              suppressHydrationWarning
               type="button"
               onClick={() => handleOAuth('github')}
-              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 transition-colors text-sm font-medium text-slate-300"
+              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-slate-200 hover:bg-offwhite transition-colors text-sm font-semibold text-charcoal shadow-sm"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-3.96-1.385-.09-.225-.48-1.385-1.02-1.665-.435-.24-1.05-.81-.015-.825.975-.015 1.665.885 1.89 1.26 1.11 1.89 2.91 1.35 3.615 1.035.12-.81.435-1.35.795-1.665-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.45.39.855 1.155.855 2.325 0 1.68-.015 3.045-.015 3.465 0 .33.225.69.84.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z" />
@@ -227,9 +272,10 @@ export default function LoginPage() {
               GitHub
             </button>
             <button 
+              suppressHydrationWarning
               type="button"
               onClick={() => handleOAuth('google')}
-              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 transition-colors text-sm font-medium text-slate-300"
+              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-slate-200 hover:bg-offwhite transition-colors text-sm font-semibold text-charcoal shadow-sm"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -241,8 +287,8 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <p className="text-center text-sm text-slate-400 mt-8">
-            Don&apos;t have an account? <Link href="/register" className="text-indigo-400 font-medium hover:text-indigo-300">Sign up</Link>
+          <p className="text-center text-sm text-slate-500 mt-8">
+            Don&apos;t have an account? <Link href="/register" className="text-terracotta font-semibold hover:text-[#c4654d]">Sign up</Link>
           </p>
         </div>
       </motion.div>
