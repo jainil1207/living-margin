@@ -169,7 +169,7 @@ export default function ReaderPage({ params }: { params: Promise<{ id: string }>
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: 200, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
-                className="hidden md:block overflow-hidden"
+                className="overflow-hidden"
               >
                 <input
                   autoFocus

@@ -93,7 +93,7 @@ export default function CatalogPage() {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex flex-wrap items-center gap-2 pb-2">
         {categories.map((category) => (
           <button
             key={category}
